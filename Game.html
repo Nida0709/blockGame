@@ -66,10 +66,39 @@
 
         const canvas = document.getElementById("myCanvas");
         const ctx = canvas.getContext("2d");
-
         let x_user = 240;
-        let y_user = 320;
+        let y_user = 300;
+        let dx = 2.0;
+        let dy = 2.0;
+        let paddleHeight = 10;
+        let paddleWidth = 75;
+        let paddleX = (canvas.width-paddleWidth)/2;
+        let rightPressed = false;
+        let leftPressed = false;
 
+        document.addEventListener("keydown", keyDownHandler, false);
+        document.addEventListener("keyup", keyUpHandler, false);
+
+        function keyDownHandler(e) {
+            if(e.key == "Right" || e.key == "ArrowRight") {
+                rightPressed = true;
+            }
+            else if(e.key == "Left" || e.key == "ArrowLeft") {
+                leftPressed = true;
+            }
+        }
+
+        function keyUpHandler(e) {
+            if(e.key == "Right" || e.key == "ArrowRight") {
+                rightPressed = false;
+            }
+            else if(e.key == "Left" || e.key == "ArrowLeft") {
+                leftPressed = false;
+            }
+        }
+        
+
+        // create collision object
         let colli = []
         for (i = 10; i <= 470; i+=40){
             for (j = 10; j < 280; j+=40){
@@ -78,8 +107,7 @@
         }
         
 
-        let dx = 4.0;
-        let dy = 6.0;
+        
 
         // check if coordinates are off screen
         function calc_acc_displayDetection(position, acc, max){
@@ -88,6 +116,24 @@
             }
             return acc;
         }
+        
+        function detect_gameover(position, max){
+            let frag = false
+            if (position >= max){
+                frag = true;
+            }
+            return frag;
+        }
+
+        function calc_acc_collisionDetection(theta, dx, dy){
+            let dxr = dx * Math.cos(theta) + dy * Math.sin(theta);
+            let dyr = -1 * dx * Math.sin(theta) + dy * Math.cos(theta);
+            dxr *= -1;
+            let dx_new = dxr * Math.cos(theta) - dyr * Math.sin(theta);
+            let dy_new = dxr * Math.sin(theta) + dyr * Math.cos(theta);
+            return [dx_new, dy_new];  
+        }
+
         // collision detection
         function collisionDetection(x_user, y_user, r_user, xc_colli, yc_colli, r_colli){
             let frag = false
@@ -100,15 +146,7 @@
             return frag;
         }
 
-        function calc_acc_collisionDetection(theta, dx, dy){
-            let dxr = dx * Math.cos(theta) + dy * Math.sin(theta);
-            let dyr = -1 * dx * Math.sin(theta) + dy * Math.cos(theta);
-            dxr *= -1;
-            let dx_new = dxr * Math.cos(theta) - dyr * Math.sin(theta);
-            let dy_new = dxr * Math.sin(theta) + dyr * Math.cos(theta);
-            return [dx_new, dy_new];
-            
-        }
+        
 
         // calc collision 
         function calc_collisionRadian(x_user, y_user, xc_colli, yc_colli){
@@ -120,13 +158,51 @@
 
 
         
+        function detect_paddle(x_user, y_user, x_paddle, paddle_width, paddle_height){
+            let frag = false;
+            if (y_user >= (canvas.height - paddle_height)){
+                if ((x_user >= x_paddle) && (x_user <= x_paddle + paddle_width)){
+                    frag = true;
+                }
+            }
+            return frag;
+        }
+
+
+
+
+
+
+
+
+
         function draw(){
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Image_makaron.release();
+            
+            
+
+            
+            console.log(detect_paddle(x_user, y_user, paddleX, paddleWidth, paddleHeight))
+            // detect gameover
+            if (detect_gameover(y_user, 320)){
+                ctx.font = "80px serif";
+                ctx.fillText("Game Over", 35, canvas.height/2+25);
+                return 0;
+            }
+
+            // bound paddle
+            if (detect_paddle(x_user, y_user, paddleX, paddleWidth, paddleHeight)){
+                dy *= -1;
+            }
 
             // display detection
             dx = calc_acc_displayDetection(x_user, dx, 480);
-            dy = calc_acc_displayDetection(y_user, dy, 320);
+            dy = calc_acc_displayDetection(y_user, dy, 10000000000000);  // 1000 for invalid
+
+            
+
+            
+
 
             // collision deteciton
             for (i = 0; i < colli.length; i++){
@@ -143,34 +219,57 @@
             y_user += dy
 
 
-            // draw object
-            for (i = 0; i < colli.length; i++){
-                // ctx.beginPath();
-                // ctx.arc(colli[i][0], colli[i][1], 10, 0, Math.PI * 2, false);
-                // ctx.fillStyle = "green";
-                // ctx.fill();
-                // ctx.closePath();
-
-                ctx.beginPath();
-                Image_makaron.addEventListener("load", () => {
-                });
-                ctx.drawImage(Image_makaron, colli[i][0]-18, colli[i][1]-24, 40, 40);
-                ctx.closePath();
-            }
-            
 
 
 
+            // // draw object
+            // for (i = 0; i < colli.length; i++){
+            //     ctx.beginPath();
+            //     ctx.arc(colli[i][0], colli[i][1], 10, 0, Math.PI * 2, false);
+            //     ctx.fillStyle = "green";
+            //     ctx.fill();
+            //     ctx.closePath();
+            // }
             // ctx.beginPath();
             // ctx.rect(x_user, y_user, 20, 20);
             // ctx.fillStyle = "#FF0000";
             // ctx.fill();
             // ctx.closePath();
 
+
+
+            // draw modeling
+            for (i = 0; i < colli.length; i++){
+                ctx.beginPath();
+                Image_makaron.addEventListener("load", () => {
+                });
+                ctx.drawImage(Image_makaron, colli[i][0]-18, colli[i][1]-24, 40, 40);
+                ctx.closePath();
+            }
             ctx.beginPath();
             Image_npotyamu.addEventListener("load", () => {
             });
             ctx.drawImage(Image_npotyamu, x_user-12, y_user-16, 40, 40);
+            ctx.closePath();
+
+
+            // draw paddle
+            if(rightPressed) {
+                paddleX += 7;
+                if (paddleX + paddleWidth > canvas.width){
+                    paddleX = canvas.width - paddleWidth;
+                }
+            }
+            else if(leftPressed) {
+                paddleX -= 7;
+                if (paddleX < 0){
+                    paddleX = 0;
+                }
+            }
+            ctx.beginPath();
+            ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+            ctx.fillStyle = "#0095DD";
+            ctx.fill();
             ctx.closePath();
             
         }
