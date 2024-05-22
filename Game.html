@@ -20,7 +20,7 @@
 </head>
 
 <body>
-    <canvas id="myCanvas" width="480" height="320"></canvas>
+    <canvas id="myCanvas" width="380" height="320"></canvas>
     <script>
         //  picture setting
         const Image_npotyamu = new Image();
@@ -66,10 +66,10 @@
 
         const canvas = document.getElementById("myCanvas");
         const ctx = canvas.getContext("2d");
-        let x_user = 240;
-        let y_user = 300;
-        let dx = 2.0;
-        let dy = 2.0;
+        let x_user = canvas.width/2;
+        let y_user = canvas.height-50;
+        let dx = 0.0;
+        let dy = 4.0;
         let paddleHeight = 10;
         let paddleWidth = 75;
         let paddleX = (canvas.width-paddleWidth)/2;
@@ -182,7 +182,7 @@
             
 
             
-            console.log(detect_paddle(x_user, y_user, paddleX, paddleWidth, paddleHeight))
+            
             // detect gameover
             if (detect_gameover(y_user, 320)){
                 ctx.font = "80px serif";
@@ -222,35 +222,34 @@
 
 
 
-            // // draw object
-            // for (i = 0; i < colli.length; i++){
-            //     ctx.beginPath();
-            //     ctx.arc(colli[i][0], colli[i][1], 10, 0, Math.PI * 2, false);
-            //     ctx.fillStyle = "green";
-            //     ctx.fill();
-            //     ctx.closePath();
-            // }
-            // ctx.beginPath();
-            // ctx.rect(x_user, y_user, 20, 20);
-            // ctx.fillStyle = "#FF0000";
-            // ctx.fill();
-            // ctx.closePath();
-
-
-
-            // draw modeling
+            // draw object
             for (i = 0; i < colli.length; i++){
                 ctx.beginPath();
-                Image_makaron.addEventListener("load", () => {
-                });
-                ctx.drawImage(Image_makaron, colli[i][0]-18, colli[i][1]-24, 40, 40);
+                ctx.arc(colli[i][0], colli[i][1], 10, 0, Math.PI * 2, false);
+                ctx.fillStyle = "green";
+                ctx.fill();
                 ctx.closePath();
             }
             ctx.beginPath();
-            Image_npotyamu.addEventListener("load", () => {
-            });
-            ctx.drawImage(Image_npotyamu, x_user-12, y_user-16, 40, 40);
+            ctx.rect(x_user, y_user, 20, 20);
+            ctx.fillStyle = "#FF0000";
+            ctx.fill();
             ctx.closePath();
+
+
+            // // draw modeling
+            // for (i = 0; i < colli.length; i++){
+            //     ctx.beginPath();
+            //     Image_makaron.addEventListener("load", () => {
+            //     });
+            //     ctx.drawImage(Image_makaron, colli[i][0]-18, colli[i][1]-24, 40, 40);
+            //     ctx.closePath();
+            // }
+            // ctx.beginPath();
+            // Image_npotyamu.addEventListener("load", () => {
+            // });
+            // ctx.drawImage(Image_npotyamu, x_user-12, y_user-16, 40, 40);
+            // ctx.closePath();
 
 
             // draw paddle
