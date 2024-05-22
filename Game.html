@@ -7,7 +7,7 @@
     <style>
          * {
             padding: 0; 
-            margin: 10;
+            margin: 0 auto;
         }
         canvas {
             background: #AFDFE4;
@@ -67,10 +67,10 @@
         const canvas = document.getElementById("myCanvas");
         const ctx = canvas.getContext("2d");
         let x_user = canvas.width/2;
-        let y_user = canvas.height-50;
+        let y_user = canvas.height-20;
         let dx = 0.0;
-        let dy = 4.0;
-        let paddleHeight = 10;
+        let dy = -4.0;
+        let paddleHeight = 5;
         let paddleWidth = 75;
         let paddleX = (canvas.width-paddleWidth)/2;
         let rightPressed = false;
@@ -99,96 +99,66 @@
         
 
         // create collision object
-        let colli = []
-        for (i = 10; i <= 470; i+=40){
-            for (j = 10; j < 280; j+=40){
-                colli.push([i, j])
-            }
-        }
-        
-
-        
-
-        // check if coordinates are off screen
-        function calc_acc_displayDetection(position, acc, max){
-            if (position<=0 ||  position>=max){
-                acc *= -1;
-            }
-            return acc;
-        }
-        
-        function detect_gameover(position, max){
-            let frag = false
-            if (position >= max){
-                frag = true;
-            }
-            return frag;
-        }
-
-        function calc_acc_collisionDetection(theta, dx, dy){
-            let dxr = dx * Math.cos(theta) + dy * Math.sin(theta);
-            let dyr = -1 * dx * Math.sin(theta) + dy * Math.cos(theta);
-            dxr *= -1;
-            let dx_new = dxr * Math.cos(theta) - dyr * Math.sin(theta);
-            let dy_new = dxr * Math.sin(theta) + dyr * Math.cos(theta);
-            return [dx_new, dy_new];  
-        }
-
-        // collision detection
-        function collisionDetection(x_user, y_user, r_user, xc_colli, yc_colli, r_colli){
-            let frag = false
-            let d2 = (xc_colli - x_user) ** 2 + (yc_colli - y_user) ** 2;
-            let d = Math.sqrt(d2);
-            let l = Math.abs(r_user + r_colli);
-            if (d - l <= 0){
-                frag = true;
-            }
-            return frag;
-        }
-
-        
-
-        // calc collision 
-        function calc_collisionRadian(x_user, y_user, xc_colli, yc_colli){
-            // calc normal line
-            let theta = ((yc_colli - y_user) / (xc_colli - x_user)) * -1;
-            // slope 2 radian
-            return Math.atan(theta);
-        }
-
-
-        
-        function detect_paddle(x_user, y_user, x_paddle, paddle_width, paddle_height){
-            let frag = false;
-            if (y_user >= (canvas.height - paddle_height)){
-                if ((x_user >= x_paddle) && (x_user <= x_paddle + paddle_width)){
-                    frag = true;
+        function restart(){
+            let colli = []
+            for (i = 10; i <= canvas.width -10; i+=40){
+                for (j = 10; j < canvas.height * 3 / 4; j+=40){
+                    colli.push([i, j])
                 }
             }
-            return frag;
+            return colli;
         }
+        
 
-
-
-
-
-
-
-
-
-        function draw(){
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            
-
-            
-            
-            // detect gameover
-            if (detect_gameover(y_user, 320)){
-                ctx.font = "80px serif";
-                ctx.fillText("Game Over", 35, canvas.height/2+25);
-                return 0;
+        function gm(){
+            function detect_paddle(x_user, y_user, x_paddle, paddle_width, paddle_height){
+                let frag = false;
+                if ((y_user >= (canvas.height - paddle_height * 3 / 2)) && (y_user <= (canvas.height - paddle_height / 2))){
+                    if ((x_user >= x_paddle) && (x_user <= x_paddle + paddle_width)){
+                        frag = true;
+                    }
+                }
+                return frag;
             }
+            // calc collision 
+            function calc_collisionRadian(x_user, y_user, xc_colli, yc_colli){
+                // calc normal line
+                let theta = ((yc_colli - y_user) / (xc_colli - x_user)) * -1;
+                // slope 2 radian
+                return Math.atan(theta);
+            }
+            // collision detection
+            function collisionDetection(x_user, y_user, r_user, xc_colli, yc_colli, r_colli){
+                let frag = false
+                let d2 = (xc_colli - x_user) ** 2 + (yc_colli - y_user) ** 2;
+                let d = Math.sqrt(d2);
+                let l = Math.abs(r_user + r_colli);
+                if (d - l <= 0){
+                    frag = true;
+                }
+                return frag;
+            }
+            function calc_acc_collisionDetection(theta, dx, dy){
+                let dxr = dx * Math.cos(theta) + dy * Math.sin(theta);
+                let dyr = -1 * dx * Math.sin(theta) + dy * Math.cos(theta);
+                dxr *= -1;
+                let dx_new = dxr * Math.cos(theta) - dyr * Math.sin(theta);
+                let dy_new = dxr * Math.sin(theta) + dyr * Math.cos(theta);
+                return [dx_new, dy_new];  
+            }
+            // check if coordinates are off screen
+            function calc_acc_displayDetection(position, acc, max){
+                if (position<=0 ||  position>=max){
+                    acc *= -1;
+                }
+                return acc;
+            }
+
+
+
+
+
+
 
             // bound paddle
             if (detect_paddle(x_user, y_user, paddleX, paddleWidth, paddleHeight)){
@@ -196,7 +166,7 @@
             }
 
             // display detection
-            dx = calc_acc_displayDetection(x_user, dx, 480);
+            dx = calc_acc_displayDetection(x_user, dx, canvas.width);
             dy = calc_acc_displayDetection(y_user, dy, 10000000000000);  // 1000 for invalid
 
             
@@ -272,6 +242,57 @@
             ctx.closePath();
             
         }
+
+       
+        function detect_gameover(position, max){
+            let frag = false
+            if (position >= max){
+                frag = true;
+            }
+            return frag;
+        }
+
+
+
+
+        /////draw//////
+        let gameStatus = "restart"
+        let colli = []
+        function draw(){
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (gameStatus == "restart"){
+                x_user = canvas.width/2;
+                y_user = canvas.height-20;
+                dx = 0.0;
+                dy = -4.0;
+                colli = restart()
+                gameStatus = "gaming"
+            }else if(gameStatus == "gaming"){
+                // detect gameover
+                if (detect_gameover(y_user, canvas.width)){
+                    ctx.font = "30px serif";
+                    ctx.fillText("Game Over", canvas.width/2 - 75, canvas.height/2+10);
+                    gameStatus = "gameover"
+                }else{
+                    gm()
+                }
+            }else if(gameStatus == "gameover"){
+                function sleep(waitMsec) {
+                var startMsec = new Date();
+
+                // 指定ミリ秒間だけループさせる（CPUは常にビジー状態）
+                while (new Date() - startMsec < waitMsec);
+                }
+                sleep(2000);
+                gameStatus = "restart";
+            }
+            
+        }
+        /////end//////
+            
+            
+            
         setInterval(draw, 15);
         
         
